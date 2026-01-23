@@ -100,6 +100,21 @@ func generateCategoryID() int {
 	return maxID + 1
 }
 
+// healthHandler menampilkan status health API
+// @Summary Health check
+// @Description Check API health status
+// @Tags health
+// @Produce json
+// @Success 200 {object} map[string]string
+// @Router /health [get]
+func healthHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{
+		"status":  "OK",
+		"message": "API Running",
+	})
+}
+
 // listProductsHandler menampilkan semua produk
 // @Summary List all products
 // @Description Get all products
@@ -450,6 +465,7 @@ func productHandler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	// Define HTTP routes
+	http.HandleFunc("/api/health", healthHandler)
 	http.HandleFunc("/api/products", productHandler)
 	http.HandleFunc("/api/products/", productHandler)
 	http.HandleFunc("/api/categories", categoryHandler)
@@ -461,7 +477,9 @@ func main() {
 	fmt.Println("Server is running on port 8080")
 	fmt.Println("Swagger docs available at: http://localhost:8080/swagger/index.html")
 	fmt.Println("\nAvailable endpoints:")
-	fmt.Println("Products:")
+	fmt.Println("Health:")
+	fmt.Println("  GET    /api/health       - API health check")
+	fmt.Println("\nProducts:")
 	fmt.Println("  GET    /api/products     - List all products")
 	fmt.Println("  GET    /api/products/{id} - Get product by ID")
 	fmt.Println("  POST   /api/products     - Create new product")

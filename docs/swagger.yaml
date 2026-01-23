@@ -156,6 +156,21 @@ paths:
       summary: Update a category
       tags:
       - categories
+  /health:
+    get:
+      description: Check API health status
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Health check
+      tags:
+      - health
   /products:
     get:
       description: Get all products
