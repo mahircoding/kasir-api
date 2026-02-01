@@ -50,7 +50,11 @@ func (h *CategoryHandler) Handle(w http.ResponseWriter, r *http.Request) {
 // @Router /categories [get]
 func (h *CategoryHandler) ListCategories(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	categories := h.service.GetAllCategories()
+	categories, err := h.service.GetAllCategories()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 	json.NewEncoder(w).Encode(categories)
 }
 
@@ -102,7 +106,11 @@ func (h *CategoryHandler) CreateCategory(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	createdCategory := h.service.CreateCategory(newCategory)
+	createdCategory, err := h.service.CreateCategory(newCategory)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(createdCategory)

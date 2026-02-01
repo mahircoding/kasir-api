@@ -92,7 +92,7 @@ func main() {
 	productHandler := handlers.NewProductHandler(productService)
 
 	// Initialize category layers
-	categoryRepo := repositories.NewCategoryRepository()
+	categoryRepo := repositories.NewCategoryRepository(db)
 	categoryService := services.NewCategoryService(categoryRepo)
 	categoryHandler := handlers.NewCategoryHandler(categoryService)
 
