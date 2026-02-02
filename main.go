@@ -74,7 +74,7 @@ func main() {
 
 	// Set defaults for Supabase
 	if dbConfig.Port == "" {
-		dbConfig.Port = "5432"
+		dbConfig.Port = "6543"
 	}
 	if dbConfig.SSLMode == "" {
 		dbConfig.SSLMode = "require"
