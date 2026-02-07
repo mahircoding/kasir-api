@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -62,27 +63,41 @@ func main() {
 		port = "8080"
 	}
 
-	// Setup Supabase database connection
-	dbConfig := database.DBConfig{
-		Host:     viper.GetString("DB_HOST"),
-		Port:     viper.GetString("DB_PORT"),
-		User:     viper.GetString("DB_USER"),
-		Password: viper.GetString("DB_PASSWORD"),
-		DBName:   viper.GetString("DB_NAME"),
-		SSLMode:  viper.GetString("DB_SSLMODE"),
-	}
+	// Check for DATABASE_URL first (Railway provides this)
+	var db *sql.DB
+	databaseURL := viper.GetString("DATABASE_URL")
 
-	// Set defaults for Supabase
-	if dbConfig.Port == "" {
-		dbConfig.Port = "5432"
-	}
-	if dbConfig.SSLMode == "" {
-		dbConfig.SSLMode = "require"
-	}
+	if databaseURL != "" {
+		// Use DATABASE_URL directly (Railway format)
+		var err error
+		db, err = database.InitDB(databaseURL)
+		if err != nil {
+			log.Fatal("Failed to initialize database:", err)
+		}
+	} else {
+		// Fallback to individual environment variables
+		dbConfig := database.DBConfig{
+			Host:     viper.GetString("DB_HOST"),
+			Port:     viper.GetString("DB_PORT"),
+			User:     viper.GetString("DB_USER"),
+			Password: viper.GetString("DB_PASSWORD"),
+			DBName:   viper.GetString("DB_NAME"),
+			SSLMode:  viper.GetString("DB_SSLMODE"),
+		}
 
-	db, err := database.InitDBWithConfig(dbConfig)
-	if err != nil {
-		log.Fatal("Failed to initialize database:", err)
+		// Set defaults
+		if dbConfig.Port == "" {
+			dbConfig.Port = "5432"
+		}
+		if dbConfig.SSLMode == "" {
+			dbConfig.SSLMode = "require"
+		}
+
+		var err error
+		db, err = database.InitDBWithConfig(dbConfig)
+		if err != nil {
+			log.Fatal("Failed to initialize database:", err)
+		}
 	}
 	defer db.Close()
 
