@@ -24,7 +24,7 @@ func NewTransactionHandler(service *services.TransactionService) *TransactionHan
 func (h *TransactionHandler) Handle(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		path := strings.TrimPrefix(r.URL.Path, "/api/checkout")
+		path := strings.TrimPrefix(r.URL.Path, "/api/transactions")
 		if path == "" || path == "/" {
 			h.ListTransactions(w, r)
 		} else {
@@ -42,10 +42,10 @@ func (h *TransactionHandler) Handle(w http.ResponseWriter, r *http.Request) {
 // ListTransactions menampilkan semua transaksi
 // @Summary List all transactions
 // @Description Get all transactions
-// @Tags checkout
+// @Tags transactions
 // @Produce json
 // @Success 200 {array} models.Transaction
-// @Router /checkout [get]
+// @Router /transactions [get]
 func (h *TransactionHandler) ListTransactions(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	transactions, err := h.service.GetAllTransactions()
@@ -59,16 +59,16 @@ func (h *TransactionHandler) ListTransactions(w http.ResponseWriter, r *http.Req
 // GetTransaction menampilkan detail transaksi berdasarkan ID
 // @Summary Get transaction by ID
 // @Description Get transaction details by ID including line items
-// @Tags checkout
+// @Tags transactions
 // @Produce json
 // @Param id path int true "Transaction ID"
 // @Success 200 {object} models.Transaction
 // @Failure 400 {string} string "Invalid transaction ID"
 // @Failure 404 {string} string "Transaction not found"
-// @Router /checkout/{id} [get]
+// @Router /transactions/{id} [get]
 func (h *TransactionHandler) GetTransaction(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	idStr := strings.TrimPrefix(r.URL.Path, "/api/checkout/")
+	idStr := strings.TrimPrefix(r.URL.Path, "/api/transactions/")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		http.Error(w, "Invalid transaction ID", http.StatusBadRequest)
@@ -87,13 +87,13 @@ func (h *TransactionHandler) GetTransaction(w http.ResponseWriter, r *http.Reque
 // CreateTransaction membuat transaksi baru
 // @Summary Create a new transaction
 // @Description Create a new transaction with items
-// @Tags checkout
+// @Tags transactions
 // @Accept json
 // @Produce json
 // @Param transaction body models.CreateTransactionRequest true "Transaction items"
 // @Success 201 {object} models.Transaction
 // @Failure 400 {string} string "Invalid request body"
-// @Router /checkout [post]
+// @Router /transactions [post]
 func (h *TransactionHandler) CreateTransaction(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -117,17 +117,17 @@ func (h *TransactionHandler) CreateTransaction(w http.ResponseWriter, r *http.Re
 // DeleteTransaction menghapus transaksi berdasarkan ID
 // @Summary Delete a transaction
 // @Description Delete transaction by ID
-// @Tags checkout
+// @Tags transactions
 // @Produce json
 // @Param id path int true "Transaction ID"
 // @Success 200 {string} string "Transaction deleted successfully"
 // @Failure 400 {string} string "Invalid transaction ID"
 // @Failure 404 {string} string "Transaction not found"
-// @Router /checkout/{id} [delete]
+// @Router /transactions/{id} [delete]
 func (h *TransactionHandler) DeleteTransaction(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	idStr := strings.TrimPrefix(r.URL.Path, "/api/checkout/")
+	idStr := strings.TrimPrefix(r.URL.Path, "/api/transactions/")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		http.Error(w, "Invalid transaction ID", http.StatusBadRequest)

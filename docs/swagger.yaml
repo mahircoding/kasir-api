@@ -216,99 +216,6 @@ paths:
       summary: Update a category
       tags:
       - categories
-  /checkout:
-    get:
-      description: Get all transactions
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/models.Transaction'
-            type: array
-      summary: List all transactions
-      tags:
-      - checkout
-    post:
-      consumes:
-      - application/json
-      description: Create a new transaction with items
-      parameters:
-      - description: Transaction items
-        in: body
-        name: transaction
-        required: true
-        schema:
-          $ref: '#/definitions/models.CreateTransactionRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/models.Transaction'
-        "400":
-          description: Invalid request body
-          schema:
-            type: string
-      summary: Create a new transaction
-      tags:
-      - checkout
-  /checkout/{id}:
-    delete:
-      description: Delete transaction by ID
-      parameters:
-      - description: Transaction ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Transaction deleted successfully
-          schema:
-            type: string
-        "400":
-          description: Invalid transaction ID
-          schema:
-            type: string
-        "404":
-          description: Transaction not found
-          schema:
-            type: string
-      summary: Delete a transaction
-      tags:
-      - checkout
-    get:
-      description: Get transaction details by ID including line items
-      parameters:
-      - description: Transaction ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.Transaction'
-        "400":
-          description: Invalid transaction ID
-          schema:
-            type: string
-        "404":
-          description: Transaction not found
-          schema:
-            type: string
-      summary: Get transaction by ID
-      tags:
-      - checkout
   /health:
     get:
       description: Check API health status
@@ -510,4 +417,97 @@ paths:
       summary: Get today's sales report
       tags:
       - report
+  /transactions:
+    get:
+      description: Get all transactions
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Transaction'
+            type: array
+      summary: List all transactions
+      tags:
+      - transactions
+    post:
+      consumes:
+      - application/json
+      description: Create a new transaction with items
+      parameters:
+      - description: Transaction items
+        in: body
+        name: transaction
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateTransactionRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Transaction'
+        "400":
+          description: Invalid request body
+          schema:
+            type: string
+      summary: Create a new transaction
+      tags:
+      - transactions
+  /transactions/{id}:
+    delete:
+      description: Delete transaction by ID
+      parameters:
+      - description: Transaction ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Transaction deleted successfully
+          schema:
+            type: string
+        "400":
+          description: Invalid transaction ID
+          schema:
+            type: string
+        "404":
+          description: Transaction not found
+          schema:
+            type: string
+      summary: Delete a transaction
+      tags:
+      - transactions
+    get:
+      description: Get transaction details by ID including line items
+      parameters:
+      - description: Transaction ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Transaction'
+        "400":
+          description: Invalid transaction ID
+          schema:
+            type: string
+        "404":
+          description: Transaction not found
+          schema:
+            type: string
+      summary: Get transaction by ID
+      tags:
+      - transactions
 swagger: "2.0"
