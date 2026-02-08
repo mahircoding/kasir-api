@@ -1,6 +1,13 @@
 basePath: /api
 definitions:
-  main.Category:
+  models.BestSellerInfo:
+    properties:
+      nama:
+        type: string
+      qty_terjual:
+        type: integer
+    type: object
+  models.Category:
     properties:
       description:
         type: string
@@ -9,7 +16,14 @@ definitions:
       name:
         type: string
     type: object
-  main.Product:
+  models.CreateTransactionRequest:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/models.TransactionItem'
+        type: array
+    type: object
+  models.Product:
     properties:
       category_id:
         type: integer
@@ -20,6 +34,52 @@ definitions:
       price:
         type: number
       stock:
+        type: integer
+    type: object
+  models.SalesReport:
+    properties:
+      end_date:
+        type: string
+      produk_terlaris:
+        $ref: '#/definitions/models.BestSellerInfo'
+      start_date:
+        type: string
+      total_revenue:
+        type: integer
+      total_transaksi:
+        type: integer
+    type: object
+  models.Transaction:
+    properties:
+      created_at:
+        type: string
+      details:
+        items:
+          $ref: '#/definitions/models.TransactionDetail'
+        type: array
+      id:
+        type: integer
+      total_amount:
+        type: integer
+    type: object
+  models.TransactionDetail:
+    properties:
+      id:
+        type: integer
+      product_id:
+        type: integer
+      quantity:
+        type: integer
+      subtotal:
+        type: integer
+      transaction_id:
+        type: integer
+    type: object
+  models.TransactionItem:
+    properties:
+      product_id:
+        type: integer
+      quantity:
         type: integer
     type: object
 host: localhost:8080
@@ -39,7 +99,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/main.Category'
+              $ref: '#/definitions/models.Category'
             type: array
       summary: List all categories
       tags:
@@ -54,14 +114,14 @@ paths:
         name: category
         required: true
         schema:
-          $ref: '#/definitions/main.Category'
+          $ref: '#/definitions/models.Category'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/main.Category'
+            $ref: '#/definitions/models.Category'
         "400":
           description: Invalid request body
           schema:
@@ -110,7 +170,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/main.Category'
+            $ref: '#/definitions/models.Category'
         "400":
           description: Invalid category ID
           schema:
@@ -137,14 +197,14 @@ paths:
         name: category
         required: true
         schema:
-          $ref: '#/definitions/main.Category'
+          $ref: '#/definitions/models.Category'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/main.Category'
+            $ref: '#/definitions/models.Category'
         "400":
           description: Invalid request
           schema:
@@ -156,6 +216,99 @@ paths:
       summary: Update a category
       tags:
       - categories
+  /checkout:
+    get:
+      description: Get all transactions
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Transaction'
+            type: array
+      summary: List all transactions
+      tags:
+      - checkout
+    post:
+      consumes:
+      - application/json
+      description: Create a new transaction with items
+      parameters:
+      - description: Transaction items
+        in: body
+        name: transaction
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateTransactionRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Transaction'
+        "400":
+          description: Invalid request body
+          schema:
+            type: string
+      summary: Create a new transaction
+      tags:
+      - checkout
+  /checkout/{id}:
+    delete:
+      description: Delete transaction by ID
+      parameters:
+      - description: Transaction ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Transaction deleted successfully
+          schema:
+            type: string
+        "400":
+          description: Invalid transaction ID
+          schema:
+            type: string
+        "404":
+          description: Transaction not found
+          schema:
+            type: string
+      summary: Delete a transaction
+      tags:
+      - checkout
+    get:
+      description: Get transaction details by ID including line items
+      parameters:
+      - description: Transaction ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Transaction'
+        "400":
+          description: Invalid transaction ID
+          schema:
+            type: string
+        "404":
+          description: Transaction not found
+          schema:
+            type: string
+      summary: Get transaction by ID
+      tags:
+      - checkout
   /health:
     get:
       description: Check API health status
@@ -173,7 +326,24 @@ paths:
       - health
   /products:
     get:
-      description: Get all products
+      description: Get all products with optional filters
+      parameters:
+      - description: Filter by product name
+        in: query
+        name: name
+        type: string
+      - description: Filter by category ID
+        in: query
+        name: category_id
+        type: integer
+      - description: Filter by minimum price
+        in: query
+        name: min_price
+        type: number
+      - description: Filter by maximum price
+        in: query
+        name: max_price
+        type: number
       produces:
       - application/json
       responses:
@@ -181,7 +351,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/main.Product'
+              $ref: '#/definitions/models.Product'
             type: array
       summary: List all products
       tags:
@@ -196,14 +366,14 @@ paths:
         name: product
         required: true
         schema:
-          $ref: '#/definitions/main.Product'
+          $ref: '#/definitions/models.Product'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/main.Product'
+            $ref: '#/definitions/models.Product'
         "400":
           description: Invalid request body
           schema:
@@ -252,7 +422,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/main.Product'
+            $ref: '#/definitions/models.Product'
         "400":
           description: Invalid product ID
           schema:
@@ -279,14 +449,14 @@ paths:
         name: product
         required: true
         schema:
-          $ref: '#/definitions/main.Product'
+          $ref: '#/definitions/models.Product'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/main.Product'
+            $ref: '#/definitions/models.Product'
         "400":
           description: Invalid request
           schema:
@@ -298,4 +468,46 @@ paths:
       summary: Update a product
       tags:
       - products
+  /report:
+    get:
+      description: Get sales summary for a specific date range
+      parameters:
+      - description: Start date (YYYY-MM-DD)
+        in: query
+        name: start_date
+        required: true
+        type: string
+      - description: End date (YYYY-MM-DD)
+        in: query
+        name: end_date
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.SalesReport'
+        "400":
+          description: Missing or invalid date parameters
+          schema:
+            type: string
+      summary: Get sales report by date range
+      tags:
+      - report
+  /report/hari-ini:
+    get:
+      description: Get sales summary for today including total revenue, transaction
+        count, and best selling product
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.SalesReport'
+      summary: Get today's sales report
+      tags:
+      - report
 swagger: "2.0"
