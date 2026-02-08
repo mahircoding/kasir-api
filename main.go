@@ -70,6 +70,14 @@ func main() {
 	var db *sql.DB
 	databaseURL := os.Getenv("DATABASE_URL")
 
+	// Debug: print whether DATABASE_URL is set
+	if databaseURL != "" {
+		fmt.Println("DATABASE_URL is set, length:", len(databaseURL))
+	} else {
+		fmt.Println("DATABASE_URL is NOT set, checking individual vars...")
+		fmt.Println("DB_HOST:", os.Getenv("DB_HOST"))
+	}
+
 	if databaseURL != "" {
 		// Use DATABASE_URL directly (Railway/Supabase format)
 		fmt.Println("Using DATABASE_URL connection string")
@@ -79,22 +87,28 @@ func main() {
 			log.Fatal("Failed to initialize database:", err)
 		}
 	} else {
-		// Fallback to individual environment variables
-		dbConfig := database.DBConfig{
-			Host:     viper.GetString("DB_HOST"),
-			Port:     viper.GetString("DB_PORT"),
-			User:     viper.GetString("DB_USER"),
-			Password: viper.GetString("DB_PASSWORD"),
-			DBName:   viper.GetString("DB_NAME"),
-			SSLMode:  viper.GetString("DB_SSLMODE"),
+		// Fallback to individual environment variables - use os.Getenv directly
+		dbHost := os.Getenv("DB_HOST")
+		dbPort := os.Getenv("DB_PORT")
+		dbUser := os.Getenv("DB_USER")
+		dbPassword := os.Getenv("DB_PASSWORD")
+		dbName := os.Getenv("DB_NAME")
+		dbSSLMode := os.Getenv("DB_SSLMODE")
+
+		if dbPort == "" {
+			dbPort = "5432"
+		}
+		if dbSSLMode == "" {
+			dbSSLMode = "require"
 		}
 
-		// Set defaults
-		if dbConfig.Port == "" {
-			dbConfig.Port = "5432"
-		}
-		if dbConfig.SSLMode == "" {
-			dbConfig.SSLMode = "require"
+		dbConfig := database.DBConfig{
+			Host:     dbHost,
+			Port:     dbPort,
+			User:     dbUser,
+			Password: dbPassword,
+			DBName:   dbName,
+			SSLMode:  dbSSLMode,
 		}
 
 		var err error
