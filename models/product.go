@@ -8,3 +8,11 @@ type Product struct {
 	Stock      int     `json:"stock"`
 	CategoryID int     `json:"category_id"`
 }
+
+// ProductFilter represents query filters for products
+type ProductFilter struct {
+	Name       string
+	CategoryID int
+	MinPrice   float64
+	MaxPrice   float64
+}

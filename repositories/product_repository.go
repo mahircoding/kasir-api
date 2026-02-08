@@ -17,9 +17,37 @@ func NewProductRepository(db *sql.DB) *ProductRepository {
 	return &ProductRepository{db: db}
 }
 
-// GetAll returns all products
-func (r *ProductRepository) GetAll() ([]models.Product, error) {
-	rows, err := r.db.Query("SELECT id, name, price, stock, category_id FROM products")
+// GetAll returns all products with optional filters
+func (r *ProductRepository) GetAll(filter models.ProductFilter) ([]models.Product, error) {
+	query := "SELECT id, name, price, stock, category_id FROM products WHERE 1=1"
+	var args []interface{}
+	argIndex := 1
+
+	if filter.Name != "" {
+		query += fmt.Sprintf(" AND LOWER(name) LIKE LOWER($%d)", argIndex)
+		args = append(args, "%"+filter.Name+"%")
+		argIndex++
+	}
+
+	if filter.CategoryID > 0 {
+		query += fmt.Sprintf(" AND category_id = $%d", argIndex)
+		args = append(args, filter.CategoryID)
+		argIndex++
+	}
+
+	if filter.MinPrice > 0 {
+		query += fmt.Sprintf(" AND price >= $%d", argIndex)
+		args = append(args, filter.MinPrice)
+		argIndex++
+	}
+
+	if filter.MaxPrice > 0 {
+		query += fmt.Sprintf(" AND price <= $%d", argIndex)
+		args = append(args, filter.MaxPrice)
+		argIndex++
+	}
+
+	rows, err := r.db.Query(query, args...)
 	if err != nil {
 		return nil, err
 	}

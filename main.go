@@ -45,6 +45,8 @@ func healthHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{
 		"status":  "OK",
 		"message": "API Running",
+		"version": "1.0",
+		"stage":   "development",
 	})
 }
 
@@ -68,14 +70,17 @@ func main() {
 
 	// Check for DATABASE_URL first (Railway provides this)
 	var db *sql.DB
-	databaseURL := os.Getenv("DATABASE_URL")
+	databaseURL := viper.GetString("DATABASE_URL")
+	if databaseURL == "" {
+		databaseURL = os.Getenv("DATABASE_URL")
+	}
 
 	// Debug: print whether DATABASE_URL is set
 	if databaseURL != "" {
 		fmt.Println("DATABASE_URL is set, length:", len(databaseURL))
 	} else {
 		fmt.Println("DATABASE_URL is NOT set, checking individual vars...")
-		fmt.Println("DB_HOST:", os.Getenv("DB_HOST"))
+		fmt.Println("DB_HOST:", viper.GetString("DB_HOST"))
 	}
 
 	if databaseURL != "" {
@@ -87,13 +92,13 @@ func main() {
 			log.Fatal("Failed to initialize database:", err)
 		}
 	} else {
-		// Fallback to individual environment variables - use os.Getenv directly
-		dbHost := os.Getenv("DB_HOST")
-		dbPort := os.Getenv("DB_PORT")
-		dbUser := os.Getenv("DB_USER")
-		dbPassword := os.Getenv("DB_PASSWORD")
-		dbName := os.Getenv("DB_NAME")
-		dbSSLMode := os.Getenv("DB_SSLMODE")
+		// Fallback to individual environment variables - use viper
+		dbHost := viper.GetString("DB_HOST")
+		dbPort := viper.GetString("DB_PORT")
+		dbUser := viper.GetString("DB_USER")
+		dbPassword := viper.GetString("DB_PASSWORD")
+		dbName := viper.GetString("DB_NAME")
+		dbSSLMode := viper.GetString("DB_SSLMODE")
 
 		if dbPort == "" {
 			dbPort = "5432"
@@ -129,12 +134,26 @@ func main() {
 	categoryService := services.NewCategoryService(categoryRepo)
 	categoryHandler := handlers.NewCategoryHandler(categoryService)
 
+	// Initialize transaction layers
+	transactionRepo := repositories.NewTransactionRepository(db)
+	transactionService := services.NewTransactionService(transactionRepo, productRepo)
+	transactionHandler := handlers.NewTransactionHandler(transactionService)
+
+	// Initialize report layers
+	reportRepo := repositories.NewReportRepository(db)
+	reportService := services.NewReportService(reportRepo)
+	reportHandler := handlers.NewReportHandler(reportService)
+
 	// Define HTTP routes
 	http.HandleFunc("/api/health", healthHandler)
 	http.HandleFunc("/api/products", productHandler.Handle)
 	http.HandleFunc("/api/products/", productHandler.Handle)
 	http.HandleFunc("/api/categories", categoryHandler.Handle)
 	http.HandleFunc("/api/categories/", categoryHandler.Handle)
+	http.HandleFunc("/api/transactions", transactionHandler.Handle)
+	http.HandleFunc("/api/transactions/", transactionHandler.Handle)
+	http.HandleFunc("/api/report", reportHandler.Handle)
+	http.HandleFunc("/api/report/", reportHandler.Handle)
 
 	// Swagger documentation
 	http.HandleFunc("/swagger/", httpSwagger.WrapHandler)
@@ -156,6 +175,14 @@ func main() {
 	fmt.Println("  POST   /api/categories     - Create new category")
 	fmt.Println("  PUT    /api/categories/{id} - Update category")
 	fmt.Println("  DELETE /api/categories/{id} - Delete category")
+	fmt.Println("\nTransactions:")
+	fmt.Println("  GET    /api/transactions     - List all transactions")
+	fmt.Println("  GET    /api/transactions/{id} - Get transaction by ID")
+	fmt.Println("  POST   /api/transactions     - Create new transaction")
+	fmt.Println("  DELETE /api/transactions/{id} - Delete transaction")
+	fmt.Println("\nReport:")
+	fmt.Println("  GET    /api/report/hari-ini  - Today's sales summary")
+	fmt.Println("  GET    /api/report?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD - Sales by date range")
 
 	log.Fatal(http.ListenAndServe(":"+port, nil))
 }

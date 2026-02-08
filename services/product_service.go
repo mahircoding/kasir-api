@@ -15,9 +15,9 @@ func NewProductService(repo *repositories.ProductRepository) *ProductService {
 	return &ProductService{repo: repo}
 }
 
-// GetAllProducts returns all products
-func (s *ProductService) GetAllProducts() ([]models.Product, error) {
-	return s.repo.GetAll()
+// GetAllProducts returns all products with optional filters
+func (s *ProductService) GetAllProducts(filter models.ProductFilter) ([]models.Product, error) {
+	return s.repo.GetAll(filter)
 }
 
 // GetProductByID returns a product by ID

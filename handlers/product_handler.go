@@ -41,16 +41,44 @@ func (h *ProductHandler) Handle(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// ListProducts menampilkan semua produk
+// ListProducts menampilkan semua produk dengan filter opsional
 // @Summary List all products
-// @Description Get all products
+// @Description Get all products with optional filters
 // @Tags products
 // @Produce json
+// @Param name query string false "Filter by product name"
+// @Param category_id query int false "Filter by category ID"
+// @Param min_price query number false "Filter by minimum price"
+// @Param max_price query number false "Filter by maximum price"
 // @Success 200 {array} models.Product
 // @Router /products [get]
 func (h *ProductHandler) ListProducts(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	products, err := h.service.GetAllProducts()
+
+	// Parse query parameters
+	filter := models.ProductFilter{
+		Name: r.URL.Query().Get("name"),
+	}
+
+	if categoryID := r.URL.Query().Get("category_id"); categoryID != "" {
+		if id, err := strconv.Atoi(categoryID); err == nil {
+			filter.CategoryID = id
+		}
+	}
+
+	if minPrice := r.URL.Query().Get("min_price"); minPrice != "" {
+		if price, err := strconv.ParseFloat(minPrice, 64); err == nil {
+			filter.MinPrice = price
+		}
+	}
+
+	if maxPrice := r.URL.Query().Get("max_price"); maxPrice != "" {
+		if price, err := strconv.ParseFloat(maxPrice, 64); err == nil {
+			filter.MaxPrice = price
+		}
+	}
+
+	products, err := h.service.GetAllProducts(filter)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
