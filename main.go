@@ -60,15 +60,19 @@ func main() {
 
 	port := viper.GetString("PORT")
 	if port == "" {
+		port = os.Getenv("PORT")
+	}
+	if port == "" {
 		port = "8080"
 	}
 
 	// Check for DATABASE_URL first (Railway provides this)
 	var db *sql.DB
-	databaseURL := viper.GetString("DATABASE_URL")
+	databaseURL := os.Getenv("DATABASE_URL")
 
 	if databaseURL != "" {
-		// Use DATABASE_URL directly (Railway format)
+		// Use DATABASE_URL directly (Railway/Supabase format)
+		fmt.Println("Using DATABASE_URL connection string")
 		var err error
 		db, err = database.InitDB(databaseURL)
 		if err != nil {
